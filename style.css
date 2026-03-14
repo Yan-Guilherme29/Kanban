@@ -1,0 +1,20 @@
+body{
+    background-color: rgb(227, 238, 243);
+}
+
+h1{
+    text-align: center;
+}
+
+.criacao-card{
+    text-align: center;
+}
+
+
+.kanban{
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 20px;
+    text-align: center;
+}
+
