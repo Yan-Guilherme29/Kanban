@@ -12,8 +12,6 @@ function criarTarefa() {
 
     const textoTarefa = inputTarefa.value.trim();
 
-    console.log(textoTarefa);
-
     if(textoTarefa === "") {
         alert("Digite uma Tarefa ")
         return
@@ -26,5 +24,9 @@ function criarTarefa() {
     novoCard.textContent = textoTarefa
 
     aFazer.appendChild(novoCard)
+
+    inputTarefa.value = ""
+
+    inputTarefa.focus()
 
 }
