@@ -50,6 +50,21 @@ function criarTarefa() {
 
     })
 
+    novoCard.addEventListener("dblclick", function(){
+
+    const textoAtual = novoCard.textContent
+    const novoTexto = prompt("Editar a Tarefa: ", textoAtual)
+
+    if(novoTexto !== null){
+
+        const textoTratado = novoTexto.trim()
+
+        if(textoTratado !== ""){
+            novoCard.textContent = textoTratado
+        }
+    }
+})
+
     novoCard.textContent = textoTarefa
 
     aFazer.appendChild(novoCard)
