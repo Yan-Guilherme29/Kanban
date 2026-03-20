@@ -65,7 +65,6 @@ button:hover{
     background-color: rgb(230, 230, 230);
 }
 
-
 @media (max-width: 768px){
     .kanban{
         grid-template-columns: 1fr;
@@ -86,6 +85,30 @@ button:hover{
         flex-direction: column;
         align-items: center;
     }
+}
+
+.card{
+    position: relative;
+}
+
+.card button{
+    margin-top: -3px;
+    position:absolute;
+    top: 5px;
+    right: 8px;
+
+    background: transparent;
+    border: none;
+
+    font-size: 10px;
+    cursor: pointer;
+
+    color: #1424d0;
+}
+
+.card button:hover{
+    color: red;
+    transform: scale(1.2);
 }
 
 .card{
