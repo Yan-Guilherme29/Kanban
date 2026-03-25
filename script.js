@@ -1,50 +1,151 @@
 // ==========================================
-// Quadro Kanban - Projeto Web I
+// VARIÁVEIS
 // ==========================================
-
-// Campo de entrada
 const inputTarefa = document.getElementById("input-tarefa");
-
-// Botão de criar tarefa
 const btnCriar = document.getElementById("btn-criar");
 
-// Colunas
 const aFazer = document.getElementById("a-fazer");
 const fazendo = document.getElementById("fazendo");
 const concluido = document.getElementById("concluido");
 
-// Armazena o card sendo arrastado
 let variavelCardArrastado = null;
+let tarefas = [];
 
 
-// Permite soltar o card
+// ==========================================
+// STORAGE
+// ==========================================
+function salvarTarefas(){
+    localStorage.setItem("tarefas", JSON.stringify(tarefas));
+}
+
+function carregarTarefas(){
+    const dados = localStorage.getItem("tarefas");
+
+    if(dados){
+        tarefas = JSON.parse(dados);
+    }
+}
+
+
+// ==========================================
+// DRAG AND DROP
+// ==========================================
 function permitirDrop(event) {
     event.preventDefault();
 }
 
-
-// Configura drag and drop para cada coluna
 function configurarColuna(coluna){
-
     coluna.addEventListener("dragover", permitirDrop);
 
     coluna.addEventListener("drop", function(){
 
         if (variavelCardArrastado) {
+
             coluna.appendChild(variavelCardArrastado);
+
+            const texto = variavelCardArrastado.textContent
+                .replace("❌", "")
+                .trim();
+
+            const novaColuna = coluna.id;
+
+            const tarefa = tarefas.find(function(t){
+                return t.texto === texto;
+            });
+
+            if (tarefa) {
+                tarefa.coluna = novaColuna;
+                salvarTarefas();
+            }
+
             variavelCardArrastado = null;
         }
 
     });
 }
 
-// Aplica configuração nas colunas
 configurarColuna(aFazer);
 configurarColuna(fazendo);
 configurarColuna(concluido);
 
 
-// Função para criar tarefas
+// ==========================================
+// FUNÇÃO PRINCIPAL DE CRIAR CARD
+// ==========================================
+function criarCard(texto, colunaId){
+
+    const novoCard = document.createElement("div");
+    novoCard.classList.add("card");
+    novoCard.setAttribute("draggable", "true");
+
+    // DRAG
+    novoCard.addEventListener("dragstart", function(){
+        variavelCardArrastado = novoCard;
+    });
+
+    // EDITAR
+    novoCard.addEventListener("dblclick", function(){
+
+        const textoAtual = texto;
+        const novoTexto = prompt("Editar a Tarefa:", textoAtual);
+
+        if(novoTexto !== null){
+            const textoTratado = novoTexto.trim();
+
+            if(textoTratado !== ""){
+
+                // Atualiza visual
+                spanTexto.textContent = textoTratado + " ";
+
+                // Atualiza no array
+                const tarefa = tarefas.find(t => t.texto === texto);
+                if(tarefa){
+                    tarefa.texto = textoTratado;
+                    salvarTarefas();
+                }
+            }
+        }
+    });
+
+    // TEXTO
+    const spanTexto = document.createElement("span");
+    spanTexto.textContent = texto + " ";
+
+    // BOTÃO EXCLUIR
+    const botaoExcluir = document.createElement("button");
+    botaoExcluir.textContent = "❌";
+
+    botaoExcluir.addEventListener("click", function(){
+
+        const confirmar = confirm("Deseja excluir esta tarefa?");
+
+        if(confirmar){
+
+            // Remove do array
+            tarefas = tarefas.filter(function(t){
+                return t.texto !== texto;
+            });
+
+            salvarTarefas();
+
+            // Remove da tela
+            novoCard.remove();
+        }
+    });
+
+    // MONTAGEM
+    novoCard.appendChild(spanTexto);
+    novoCard.appendChild(botaoExcluir);
+
+    // ADICIONA NA COLUNA
+    document.getElementById(colunaId).appendChild(novoCard);
+}
+
+
+// ==========================================
+// CRIAR TAREFA
+// ==========================================
 function criarTarefa() {
 
     const textoTarefa = inputTarefa.value.trim();
@@ -54,62 +155,32 @@ function criarTarefa() {
         return;
     }
 
-    // Cria o card
-    const novoCard = document.createElement("div");
-    novoCard.classList.add("card");
-    novoCard.setAttribute("draggable", "true");
+    const tarefa = {
+        texto: textoTarefa,
+        coluna: "a-fazer"
+    };
 
-    // Evento de arrastar
-    novoCard.addEventListener("dragstart", function() {
-        variavelCardArrastado = novoCard;
-    });
+    tarefas.push(tarefa);
+    salvarTarefas();
 
-    // Evento de editar com duplo clique
-    novoCard.addEventListener("dblclick", function(){
+    criarCard(textoTarefa, "a-fazer");
 
-        const textoAtual = novoCard.textContent.replace("❌", "").trim();
-        const novoTexto = prompt("Editar a Tarefa: ", textoAtual);
-
-        if(novoTexto !== null){
-
-            const textoTratado = novoTexto.trim();
-
-            if(textoTratado !== ""){
-                novoCard.firstChild.textContent = textoTratado + " ";
-            }
-        }
-    });
-
-    // Texto do card
-    const spanTexto = document.createElement("span");
-    spanTexto.textContent = textoTarefa + " ";
-
-    // Botão de excluir
-    const botaoExcluir = document.createElement("button");
-    botaoExcluir.textContent = "❌";
-
-    botaoExcluir.addEventListener("click", function(){
-
-    const confirmar = confirm("Deseja excluir esta tarefa?")
-
-    if (confirmar) {
-        novoCard.remove();
-    }
-
-});
-
-    // Montagem do card
-    novoCard.appendChild(spanTexto);
-    novoCard.appendChild(botaoExcluir);
-
-    // Adiciona na coluna A Fazer
-    aFazer.appendChild(novoCard);
-
-    // Limpa input
     inputTarefa.value = "";
     inputTarefa.focus();
 }
 
 
-// Evento do botão criar
+// ==========================================
+// CARREGAR AO INICIAR
+// ==========================================
+carregarTarefas();
+
+tarefas.forEach(function(tarefa){
+    criarCard(tarefa.texto, tarefa.coluna);
+});
+
+
+// ==========================================
+// EVENTO BOTÃO
+// ==========================================
 btnCriar.addEventListener("click", criarTarefa);
