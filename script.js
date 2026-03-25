@@ -4,23 +4,49 @@
 // - Criar tarefas
 // - Arrastar tarefas entre colunas
 // - Editar tarefas com duplo clique
+// - Persistência com LocalStorage
 // ==========================================
 
 // Campo de entrada onde o usuário digita a tarefa
 const inputTarefa = document.getElementById("input-tarefa");
 
-// botão que cria novas tarefas
+// Botão que cria novas tarefas
 const btnCriar = document.getElementById("btn-criar");
 
 // Colunas do Quadro Kanban
 const aFazer = document.getElementById("a-fazer");
-const fazendo = document.getElementById("fazendo")
-const concluido = document.getElementById("concluido")
+const fazendo = document.getElementById("fazendo");
+const concluido = document.getElementById("concluido");
 
 // Armazena temporariamente o card que está sendo arrastado
-let variavelCardArrastado = null
+let variavelCardArrastado = null;
 
-//Permite que um elemento seja solto em uma coluna
+// Array que armazena as tarefas
+let tarefas = [];
+
+// ==========================================
+// LOCAL STORAGE
+// ==========================================
+
+// Salva as tarefas no navegador
+function salvarTarefas(){
+    localStorage.setItem("tarefas", JSON.stringify(tarefas));
+}
+
+// Carrega as tarefas salvas
+function carregarTarefas(){
+    const dados = localStorage.getItem("tarefas");
+
+    if(dados){
+        tarefas = JSON.parse(dados);
+    }
+}
+
+// ==========================================
+// DRAG AND DROP
+// ==========================================
+
+// Permite que um elemento seja solto em uma coluna
 function permitirDrop(event) {
     event.preventDefault();
 }
@@ -28,90 +54,121 @@ function permitirDrop(event) {
 // Configura os eventos de drag and drop para uma coluna
 function configurarColuna(coluna){
 
-    // Permite que o card seja arrastado
-    coluna.addEventListener("dragover", permitirDrop)
+    // Permite arrastar sobre a coluna
+    coluna.addEventListener("dragover", permitirDrop);
 
-    // Quando o card for solto em uma coluna
+    // Quando soltar o card na coluna
     coluna.addEventListener("drop", function(){
 
-    // Move o card para coluna atual
-    coluna.appendChild(variavelCardArrastado)
+        coluna.appendChild(variavelCardArrastado);
 
-    //Limpa a variável do card
-    variavelCardArrastado = null
+        // Atualiza a coluna no array
+        const texto = variavelCardArrastado.textContent;
 
-    })
+        const tarefa = tarefas.find(t => t.texto === texto);
+
+        if(tarefa){
+            tarefa.coluna = coluna.id;
+            salvarTarefas();
+        }
+
+        // Limpa variável
+        variavelCardArrastado = null;
+    });
 }
 
-// Aplica as configurações para cada coluna
+// Aplica para todas as colunas
 configurarColuna(aFazer);
 configurarColuna(fazendo);
 configurarColuna(concluido);
 
-// Função que cria um novo card no quadro
-function criarTarefa() {
+// ==========================================
+// CRIAÇÃO DE CARDS
+// ==========================================
 
-    // Remove espaços extras do texto digitado
-    const textoTarefa = inputTarefa.value.trim();
+// Cria um card baseado na tarefa
+function criarCard(tarefa){
 
-    // Verifica se o campo está vazio
-    if(textoTarefa === "") {
-        alert("Digite uma Tarefa ")
-        return
-    }
-
-    // Cria um novo elemento div que representará o card
     const novoCard = document.createElement("div");
 
-    // Adiciona classe CSS do card
     novoCard.classList.add("card");
-
-    // Permite que o card seja arrastado
     novoCard.setAttribute("draggable", "true");
 
-    // Evento disparado quando o card começa a ser arrastado
-    novoCard.addEventListener("dragstart", function() {
+    novoCard.textContent = tarefa.texto;
 
-    // Guarda o card que está sendo arrastado
-    variavelCardArrastado = novoCard
+    // Evento de arrastar
+    novoCard.addEventListener("dragstart", function(){
+        variavelCardArrastado = novoCard;
+    });
 
-    })
-
-    // Permite editar o texto do card com duplo clique
+    // Evento de editar (duplo clique)
     novoCard.addEventListener("dblclick", function(){
 
-    // Texto atual do card
-    const textoAtual = novoCard.textContent
+        const textoAtual = novoCard.textContent;
+        const novoTexto = prompt("Editar a Tarefa: ", textoAtual);
 
-    // Abre prompt permitindo editar o texto
-    const novoTexto = prompt("Editar a Tarefa: ", textoAtual)
+        if(novoTexto !== null){
 
-    // Verifica se o usuário não cancelou o prompt
-    if(novoTexto !== null){
+            const textoTratado = novoTexto.trim();
 
-         // Remove espaços extras do texto digitado
-        const textoTratado = novoTexto.trim()
+            if(textoTratado !== ""){
+                novoCard.textContent = textoTratado;
 
-         // Atualiza o card apenas se o texto não estiver vazio
-        if(textoTratado !== ""){
-            novoCard.textContent = textoTratado
+                // Atualiza no array
+                tarefa.texto = textoTratado;
+                salvarTarefas();
+            }
         }
+    });
+
+    // Adiciona na coluna correta
+    if(tarefa.coluna === "a-fazer"){
+        aFazer.appendChild(novoCard);
+    } else if(tarefa.coluna === "fazendo"){
+        fazendo.appendChild(novoCard);
+    } else {
+        concluido.appendChild(novoCard);
     }
-})
-
-    // Define o texto inicial do card
-    novoCard.textContent = textoTarefa
-
-    // Adiciona o card na coluna "A Fazer"
-    aFazer.appendChild(novoCard)
-
-    // Limpa o campo de entrada
-    inputTarefa.value = ""
-
-    // Retorna o foco para o campo de texto
-    inputTarefa.focus()
-
 }
 
-// Ao clicar no botão, cria uma nova tarefa
+// ==========================================
+// CRIAR NOVA TAREFA
+// ==========================================
+
+function criarTarefa() {
+
+    const textoTarefa = inputTarefa.value.trim();
+
+    if(textoTarefa === "") {
+        alert("Digite uma Tarefa ");
+        return;
+    }
+
+    const tarefa = {
+        texto: textoTarefa,
+        coluna: "a-fazer"
+    };
+
+    tarefas.push(tarefa);
+    salvarTarefas();
+
+    criarCard(tarefa);
+
+    inputTarefa.value = "";
+    inputTarefa.focus();
+}
+
+// Evento do botão
 btnCriar.addEventListener("click", criarTarefa);
+
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+
+// Carrega tarefas salvas ao abrir a página
+carregarTarefas();
+
+// Renderiza todas as tarefas salvas
+tarefas.forEach(function(tarefa){
+    criarCard(tarefa);
+});
