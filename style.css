@@ -15,13 +15,16 @@ h2{
     text-align: center;
 }
 
+/* ================= CRIAÇÃO ================= */
+
 .criacao-card{
     display: flex;
     justify-content: center;
     gap: 10px;
     margin-bottom: 30px;
-
 }
+
+/* ================= KANBAN ================= */
 
 .kanban{
     display: grid;
@@ -33,7 +36,7 @@ h2{
     background-color: white;
     border-radius: 10px;
     padding: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .lista-cards{
@@ -43,6 +46,8 @@ h2{
     background-color: #f4f6f8;
     border-radius: 10px;
 }
+
+/* ================= INPUT ================= */
 
 input{
     width: 100%;
@@ -65,9 +70,69 @@ button:hover{
     background-color: rgb(230, 230, 230);
 }
 
+/* ================= CARD ================= */
+
+.card{
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 10px; /* 🔥 espaço entre texto e botão */
+
+    cursor: grab;
+}
+
+/* Área de conteúdo (onde funciona o dblclick) */
+.conteudo{
+    flex: 1;
+    cursor: pointer;
+
+    word-break: break-word; 
+}
+
+/* Botão excluir separado */
+.btn-excluir{
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+    border: none;
+
+    font-size: 14px;
+    cursor: pointer;
+
+    color: #888;
+
+    padding: 0;         
+    flex-shrink: 0;      
+}
+
+.btn-excluir:hover{
+    color: red;
+    transform: scale(1.2);
+}
+
+/* ================= RESPONSIVO ================= */
+
 @media (max-width: 768px){
+
     .kanban{
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .coluna{
+        width: 100%;
     }
 
     .criacao-card{
@@ -80,41 +145,4 @@ button:hover{
         width: 100%;
         max-width: 100%;
     }
-
-    .criacao-card{
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-.card{
-    position: relative;
-    padding-right: 30px;
-}
-
-.card button{
-    position: absolute;
-    top: 5px;
-    right: 8px;
-
-    background: transparent;
-    border: none;
-
-    font-size: 14px;
-    cursor: pointer;
-
-    color: #888;
-}
-
-.card button:hover{
-    color: red;
-    transform: scale(1.2);
-}
-
-.card{
-    background-color: rgb(255, 255, 255);
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 10px;
-    cursor: grab;
 }
